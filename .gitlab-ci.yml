@@ -6,17 +6,18 @@ deploy_to_dev:
   only:
     - develop
   script:
-    # --- ДИАГНОСТИКА ---
-    # Одинарные кавычки '...' спасают от ошибок парсинга
-    - 'echo "=== DIAGNOSTICS START ==="'
-    - 'echo "SF_USERNAME value: $env:SF_USERNAME"'
-    - 'echo "SERVER_KEY path: $env:SERVER_KEY"'
+    # 1. Создаем файл ключа из переменной
+    # Мы берем текст из $env:SERVER_KEY и сохраняем его в файл temp_server.key
+    - 'Set-Content -Path "temp_server.key" -Value $env:SERVER_KEY -Encoding Ascii'
     
-    # Проверка наличия файла ключа (PowerShell команда Test-Path)
-    - 'if (Test-Path "$env:SERVER_KEY") { echo "Key File EXISTS" } else { echo "Key File NOT FOUND" }'
+    # 2. Логинимся (теперь указываем путь к файлу temp_server.key)
+    - 'echo "Logging in to Salesforce..."'
+    - 'sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file "temp_server.key" --username $env:SF_USERNAME --alias target-org'
     
-    - 'echo "=== DIAGNOSTICS END ==="'
-
-    # --- ЗАПУСК SF ---
-    - 'sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file $env:SERVER_KEY --username $env:SF_USERNAME --alias target-org'
+    # 3. Деплоим
+    - 'echo "Deploying..."'
     - 'sf project deploy start --target-org target-org --source-dir force-app'
+
+  after_script:
+    # 4. Удаляем файл ключа (для безопасности)
+    - 'Remove-Item "temp_server.key" -ErrorAction SilentlyContinue'
