@@ -17,4 +17,12 @@ public class AccountHandler {
         
         insert addAccounts;
     }
+
+    public static void createAccounts(Integer n) {
+        List<Account> addAccounts = new List<Account>();
+        for(Integer i=0; i<n; i++) {
+            addAccounts.add(new Account(Name='Test Account ' + i));
+        }
+        insert addAccounts;
+    }
 }
