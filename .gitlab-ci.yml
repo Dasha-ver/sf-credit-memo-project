@@ -6,18 +6,15 @@ deploy_to_dev:
   only:
     - develop
   script:
-    # 1. Создаем файл ключа из переменной
-    # Мы берем текст из $env:SERVER_KEY и сохраняем его в файл temp_server.key
+    # 1. Создаем файл ключа
     - 'Set-Content -Path "temp_server.key" -Value $env:SERVER_KEY -Encoding Ascii'
     
-    # 2. Логинимся (теперь указываем путь к файлу temp_server.key)
-    - 'echo "Logging in to Salesforce..."'
-    - 'sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file "temp_server.key" --username $env:SF_USERNAME --alias target-org'
+    - 'echo "Logging in to Developer Org..."'
+    # 2. Логин (Добавил флаг --instance-url https://login.salesforce.com)
+    - 'sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file "temp_server.key" --username $env:SF_USERNAME --alias target-org --instance-url https://login.salesforce.com'
     
-    # 3. Деплоим
     - 'echo "Deploying..."'
     - 'sf project deploy start --target-org target-org --source-dir force-app'
 
   after_script:
-    # 4. Удаляем файл ключа (для безопасности)
     - 'Remove-Item "temp_server.key" -ErrorAction SilentlyContinue'
