@@ -7,21 +7,16 @@ deploy_to_dev:
     - develop
   script:
     # --- ДИАГНОСТИКА ---
-    - echo "=== DIAGNOSTICS START ==="
-    - echo "Computer: $env:COMPUTERNAME"
+    # Одинарные кавычки '...' спасают от ошибок парсинга
+    - 'echo "=== DIAGNOSTICS START ==="'
+    - 'echo "SF_USERNAME value: $env:SF_USERNAME"'
+    - 'echo "SERVER_KEY path: $env:SERVER_KEY"'
     
-    # Выводим переменную SF_USERNAME (в кавычках, чтобы не ломать YAML)
-    - echo "SF_USERNAME is $env:SF_USERNAME"
+    # Проверка наличия файла ключа (PowerShell команда Test-Path)
+    - 'if (Test-Path "$env:SERVER_KEY") { echo "Key File EXISTS" } else { echo "Key File NOT FOUND" }'
     
-    # Проверяем переменную ключа SERVER_KEY
-    - echo "SERVER_KEY path is $env:SERVER_KEY"
-    
-    # Проверяем, видит ли система файл ключа
-    - ls $env:SERVER_KEY
-    
-    - echo "=== DIAGNOSTICS END ==="
+    - 'echo "=== DIAGNOSTICS END ==="'
 
-    # --- ЗАПУСК КОМАНДЫ ---
-    # Мы используем переменные окружения Windows ($env:...)
-    - sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file $env:SERVER_KEY --username $env:SF_USERNAME --alias target-org
-    - sf project deploy start --target-org target-org --source-dir force-app
+    # --- ЗАПУСК SF ---
+    - 'sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file $env:SERVER_KEY --username $env:SF_USERNAME --alias target-org'
+    - 'sf project deploy start --target-org target-org --source-dir force-app'
