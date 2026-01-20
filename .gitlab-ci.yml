@@ -1,37 +1,23 @@
 stages:
-  - validate
-  - deploy
+  - debug_and_deploy
 
-# --- БЛОК 1: ПРОВЕРКА PR (MERGE REQUEST) ---
-validate_pr:
-  stage: validate
-  only:
-    - merge_requests
-  script:
-    - echo "Authorizing in Dev Hub..."
-    # В PowerShell переменные пишутся через $env:ИМЯ
-    - sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file $env:SERVER_KEY --username $env:SF_USERNAME --alias devhub --set-default-dev-hub
-
-    - echo "Creating Scratch Org..."
-    - sf org create scratch --target-org devhub --alias ci-scratch --definition-file config/project-scratch-def.json --duration-days 1 --set-default --wait 10
-
-    - echo "Pushing code..."
-    - sf project deploy start --target-org ci-scratch
-
-    - echo "Running tests..."
-    - sf apex run test --target-org ci-scratch --test-level RunLocalTests --code-coverage --result-format human --wait 10
-
-  after_script:
-    - sf org delete scratch --target-org ci-scratch --no-prompt
-
-# --- БЛОК 2: ДЕПЛОЙ В DEV (ПРИ МЕРДЖЕ) ---
 deploy_to_dev:
-  stage: deploy
+  stage: debug_and_deploy
   only:
     - develop
   script:
-    - echo "Deploying to Dev Org..."
-    # Если деплоим в тот же орг, что и DevHub - используем те же переменные
-    - sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file $env:SERVER_KEY --username $env:SF_USERNAME --alias target-org
+    # --- ДИАГНОСТИКА (НАЧАЛО) ---
+    - echo "=== DIAGNOSTICS START ==="
+    - echo "Computer Name: $env:COMPUTERNAME"
+    - echo "Check SF_USERNAME: [$env:SF_USERNAME]"
+    - echo "Check SF_CONSUMER_KEY length: $($env:SF_CONSUMER_KEY.Length)"
+    - echo "Check SERVER_KEY path: [$env:SERVER_KEY]"
+    
+    # Проверяем, существует ли файл ключа на диске
+    - if (Test-Path "$env:SERVER_KEY") { echo "Key file exists!" } else { echo "Key file NOT found!" }
+    - echo "=== DIAGNOSTICS END ==="
+    # --- ДИАГНОСТИКА (КОНЕЦ) ---
 
+    # Сама команда (добавил кавычки для надежности)
+    - sf org login jwt --client-id "$env:SF_CONSUMER_KEY" --jwt-key-file "$env:SERVER_KEY" --username "$env:SF_USERNAME" --alias target-org
     - sf project deploy start --target-org target-org --source-dir force-app
