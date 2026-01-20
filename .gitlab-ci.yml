@@ -1,23 +1,27 @@
 stages:
-  - debug_and_deploy
+  - deploy
 
 deploy_to_dev:
-  stage: debug_and_deploy
+  stage: deploy
   only:
     - develop
   script:
-    # --- ДИАГНОСТИКА (НАЧАЛО) ---
+    # --- ДИАГНОСТИКА ---
     - echo "=== DIAGNOSTICS START ==="
-    - echo "Computer Name: $env:COMPUTERNAME"
-    - echo "Check SF_USERNAME: [$env:SF_USERNAME]"
-    - echo "Check SF_CONSUMER_KEY length: $($env:SF_CONSUMER_KEY.Length)"
-    - echo "Check SERVER_KEY path: [$env:SERVER_KEY]"
+    - echo "Computer: $env:COMPUTERNAME"
     
-    # Проверяем, существует ли файл ключа на диске
-    - if (Test-Path "$env:SERVER_KEY") { echo "Key file exists!" } else { echo "Key file NOT found!" }
+    # Выводим переменную SF_USERNAME (в кавычках, чтобы не ломать YAML)
+    - echo "SF_USERNAME is $env:SF_USERNAME"
+    
+    # Проверяем переменную ключа SERVER_KEY
+    - echo "SERVER_KEY path is $env:SERVER_KEY"
+    
+    # Проверяем, видит ли система файл ключа
+    - ls $env:SERVER_KEY
+    
     - echo "=== DIAGNOSTICS END ==="
-    # --- ДИАГНОСТИКА (КОНЕЦ) ---
 
-    # Сама команда (добавил кавычки для надежности)
-    - sf org login jwt --client-id "$env:SF_CONSUMER_KEY" --jwt-key-file "$env:SERVER_KEY" --username "$env:SF_USERNAME" --alias target-org
+    # --- ЗАПУСК КОМАНДЫ ---
+    # Мы используем переменные окружения Windows ($env:...)
+    - sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file $env:SERVER_KEY --username $env:SF_USERNAME --alias target-org
     - sf project deploy start --target-org target-org --source-dir force-app
