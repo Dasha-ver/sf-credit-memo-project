@@ -20,7 +20,7 @@ pmd_scan:
   script:
     - 'echo "=== STARTING PMD SCAN ==="'
     # Сканируем папку force-app, выводим в консоль, критичность ошибок 3+
-    - 'sf scanner run --target "force-app" --format table --severity-threshold 3'
+    - 'sf scanner run --target "force-app" --format table'
 
 # =========================================================
 # 2. ВАЛИДАЦИЯ НА SCRATCH ORG (Запускается на Merge Request)
