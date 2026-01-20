@@ -1,51 +1,37 @@
-# Используем официальный образ Salesforce CLI
-image: salesforce/cli:latest-full
-
-# Определяем этапы: сначала проверка, потом деплой
 stages:
   - validate
   - deploy
 
 # --- БЛОК 1: ПРОВЕРКА PR (MERGE REQUEST) ---
-# Запускается, когда ты делаешь Merge Request
 validate_pr:
   stage: validate
   only:
     - merge_requests
   script:
-    # 1. Авторизация в Dev Hub
-    - echo "Authorizing..."
-    - sf org login jwt --client-id $SF_CONSUMER_KEY --jwt-key-file $SERVER_KEY --username $SF_USERNAME --alias devhub --set-default-dev-hub
+    - echo "Authorizing in Dev Hub..."
+    # В PowerShell переменные пишутся через $env:ИМЯ
+    - sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file $env:SERVER_KEY --username $env:SF_USERNAME --alias devhub --set-default-dev-hub
 
-    # 2. Создание Scratch Org (временная среда)
     - echo "Creating Scratch Org..."
     - sf org create scratch --target-org devhub --alias ci-scratch --definition-file config/project-scratch-def.json --duration-days 1 --set-default --wait 10
 
-    # 3. Деплой кода в Scratch Org
     - echo "Pushing code..."
     - sf project deploy start --target-org ci-scratch
 
-    # 4. Запуск Apex тестов
     - echo "Running tests..."
     - sf apex run test --target-org ci-scratch --test-level RunLocalTests --code-coverage --result-format human --wait 10
 
   after_script:
-    # 5. Удаляем Scratch Org в любом случае (даже при ошибке)
-    - sf org delete scratch --target-org ci-scratch --no-prompt || true
+    - sf org delete scratch --target-org ci-scratch --no-prompt
 
 # --- БЛОК 2: ДЕПЛОЙ В DEV (ПРИ МЕРДЖЕ) ---
-# Запускается, когда код попадает в ветку develop
 deploy_to_dev:
   stage: deploy
   only:
     - develop
   script:
     - echo "Deploying to Dev Org..."
-    # Логинимся (используем те же креды, если это тот же орг, или замени переменную на SF_DEV_ORG_USERNAME)
-    - sf org login jwt --client-id $SF_CONSUMER_KEY --jwt-key-file $SERVER_KEY --username $SF_USERNAME --alias target-org
+    # Если деплоим в тот же орг, что и DevHub - используем те же переменные
+    - sf org login jwt --client-id $env:SF_CONSUMER_KEY --jwt-key-file $env:SERVER_KEY --username $env:SF_USERNAME --alias target-org
 
-    # Деплой (без создания scratch, прямо в орг)
     - sf project deploy start --target-org target-org --source-dir force-app
-
-    # Опционально: запуск тестов на целевом орге
-    # - sf apex run test --target-org target-org --test-level RunLocalTests --wait 10
