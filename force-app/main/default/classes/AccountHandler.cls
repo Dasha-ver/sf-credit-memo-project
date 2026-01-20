@@ -1,28 +1,26 @@
 public class AccountHandler {
-    public static void insertAccount(Integer count) {
-    	
-        List <Account> addAccounts = new List <Account> ();
-        
-        Integer N = 0;
-        
-        while (N < count){
-            addAccounts.add(new Account (
-             Name = 'Acme Inc ' + N,
-                    AccountNumber = 'A000' + N
-            )
-          );
-            N++;
-                
+    
+    public static void insertNewAccount(String accName) {
+        try {
+            Account acc = new Account(Name = accName);
+            insert acc;
+        } catch (Dmlexception e) {
+            System.debug('A DML exception has occurred: ' + e.getMessage());
         }
-        
-        insert addAccounts;
     }
 
     public static void createAccounts(Integer n) {
         List<Account> addAccounts = new List<Account>();
-        for(Integer i=0; i<n; i++) {
-            addAccounts.add(new Account(Name='Test Account ' + i));
+        
+        for(Integer i=1; i<=n; i++) {
+            Account a = new Account();
+            a.Name = 'Account ' + i; 
+            a.AccountNumber = 'A000' + i;
+            addAccounts.add(a);
         }
-        insert addAccounts;
+        
+        if(addAccounts.size() > 0) {
+            insert addAccounts;
+        }
     }
 }
