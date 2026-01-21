@@ -14,7 +14,7 @@ public class AccountHandler {
         
         for(Integer i=1; i<=n; i++) {
             Account a = new Account();
-            a.Name = 'Account ' + i; 
+            a.Name = 'Super Account ' + i; 
             a.AccountNumber = 'A000' + i;
             addAccounts.add(a);
         }

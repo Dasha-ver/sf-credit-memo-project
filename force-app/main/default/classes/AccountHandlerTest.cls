@@ -18,7 +18,7 @@ private class AccountHandlerTest {
         List<Account> accts = [
             SELECT Name 
             FROM Account 
-            WHERE Name LIKE 'Account %'];
+            WHERE Name LIKE 'Super Account %'];
             
         Assert.areEqual(numAccts, accts.size(), 'The exact number of accounts should be created');
     }
