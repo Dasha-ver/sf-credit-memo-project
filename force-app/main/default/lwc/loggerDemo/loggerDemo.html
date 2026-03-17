@@ -1,0 +1,24 @@
+<template>
+    <lightning-card title="Safe Exception Handling" icon-name="utility:shield">
+        <div class="slds-p-around_medium">
+            <p class="slds-m-bottom_small">Click the button to trigger an error on the server.</p>
+            
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col">
+                    <lightning-button 
+                        label="Create Success Log" 
+                        onclick={handleSuccess} 
+                        variant="brand">
+                    </lightning-button>
+                </div>
+                <div class="slds-col">
+                    <lightning-button 
+                        label="Create Error Log" 
+                        onclick={handleError} 
+                        variant="destructive">
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+    </lightning-card>
+</template>

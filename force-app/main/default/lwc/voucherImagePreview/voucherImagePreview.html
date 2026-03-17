@@ -1,0 +1,15 @@
+<template>
+    <lightning-card title="Background Preview" icon-name="custom:custom38">
+        <div class="slds-p-around_medium slds-text-align_center">
+            
+            <template if:true={imageUrl}>
+                <img src={imageUrl} alt="Voucher Background" style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
+            </template>
+            
+            <template if:false={imageUrl}>
+                <p class="slds-text-color_weak">{labels.noBackgroundImageFound}</p>
+            </template>
+            
+        </div>
+    </lightning-card>
+</template>

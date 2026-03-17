@@ -1,0 +1,71 @@
+<apex:page standardController="Credit_Memo__c" 
+           extensions="VoucherPDFController" 
+           renderAs="pdf" 
+           applyHtmlTag="false" 
+           showHeader="false" 
+           sidebar="false"
+           standardStylesheets="false">
+    <html>
+    <head>
+        <apex:stylesheet value="{!$Resource.VoucherStyles}"/>
+    </head>
+
+    <body>
+        <apex:outputPanel layout="none" rendered="{!NOT(ISBLANK(pdfData.imageUrl))}">
+            <img class="bg-image" src="{!pdfData.imageUrl}" />
+        </apex:outputPanel>
+
+        <apex:outputPanel layout="none" rendered="{!NOT(ISBLANK($Resource.Company_Logo))}">
+            <img class="logo" src="{!URLFOR($Resource.Company_Logo)}" />
+        </apex:outputPanel>
+
+        <div class="content-wrapper">
+            
+            <table class="header-table">
+                <tr>
+                    <td class="header-title-cell">
+                        <div class="voucher-title-text">
+                            <apex:outputText value="{!$Label.Voucher_Title}" escape="false" />
+                        </div>
+                    </td>
+                    <td class="header-separator-cell">
+                        <div class="voucher-separator"></div>
+                    </td>
+                    <td>
+                        <table class="amount-table">
+                            <tr>
+                                <td class="currency-symbol">{!pdfData.currencySymbol}</td>
+                                <td class="voucher-amount">
+                                    <apex:outputText value="{0, number, ###,###,##0.00}">
+                                        <apex:param value="{!pdfData.record.Amount__c}" />
+                                    </apex:outputText>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="recipient-info">
+                 {!$Label.Exclusive_Title}<b>{!pdfData.exclusivelyForName}</b>
+            </div>
+
+            <div class="conditions-block">
+                <apex:outputPanel layout="none" rendered="{!NOT(ISBLANK(pdfData.record.Notes__c))}">
+                    <apex:outputText value="{!pdfData.record.Notes__c}" escape="false" />
+                </apex:outputPanel>
+                
+                <div class="valid-from-block">
+                    {!$Label.Valid_From} <apex:outputField value="{!pdfData.record.Valid_From__c}" /><br/>
+                    {!$Label.Valid_Until} <apex:outputField value="{!pdfData.record.Credit_Expiry_Date__c}" />
+                </div>
+            </div>
+        </div>
+
+        <div class="voucher-no">
+            {!$Label.Voucher_Number_Label} {!pdfData.record.Name}
+        </div>
+
+    </body>
+    </html>
+</apex:page>
