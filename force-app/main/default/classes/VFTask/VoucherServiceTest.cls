@@ -14,7 +14,6 @@ private class VoucherServiceTest {
             Amount__c = 500,
             Credit_Expiry_Date__c = Date.today().addDays(30),
             Valid_From__c = Date.today().addDays(-10)
-
         ));
 
         memosToInsert.add(new Credit_Memo__c(
@@ -28,8 +27,8 @@ private class VoucherServiceTest {
         memosToInsert.add(new Credit_Memo__c(
             Account__c = acc.Id,
             Amount__c = 100,
-            Credit_Expiry_Date__c = Date.today().addDays(-50),
-            Valid_From__c = Date.today().addDays(-10)
+            Valid_From__c = Date.today().addDays(80),
+            Credit_Expiry_Date__c = Date.today().addDays(100) 
         ));
 
         insert memosToInsert;
@@ -58,8 +57,7 @@ private class VoucherServiceTest {
         Map<Id, ContentVersion> cvMap = new Map<Id, ContentVersion>([
             SELECT ContentDocumentId 
             FROM ContentVersion 
-            WHERE Id 
-            IN (:cvGlobal.Id, :cvOverride.Id)
+            WHERE Id IN (:cvGlobal.Id, :cvOverride.Id)
         ]);
 
         List<ContentDocumentLink> linksToInsert = new List<ContentDocumentLink>();
@@ -99,11 +97,7 @@ private class VoucherServiceTest {
 
     @IsTest
     static void testOverrideImageAndExclusivelyFor() {
-        Credit_Memo__c memo = [
-            SELECT Id 
-            FROM Credit_Memo__c 
-            WHERE Amount__c = 1000 
-            LIMIT 1];
+        Credit_Memo__c memo = [SELECT Id FROM Credit_Memo__c WHERE Amount__c = 1000 LIMIT 1];
 
         Test.startTest();
         VoucherService.VoucherData result = VoucherService.getVoucherDataForPdf(memo.Id);
@@ -122,7 +116,6 @@ private class VoucherServiceTest {
 
     @IsTest
     static void testNoActiveImageAvailable() {
-
         Credit_Memo__c memo = [
             SELECT Id 
             FROM Credit_Memo__c 
@@ -156,5 +149,25 @@ private class VoucherServiceTest {
             
         Assert.isNotNull(imageUrl, 'Preview method should successfully return an image URL');
         Assert.isTrue(imageUrl.contains(cvOverride.Id), 'Preview should match the resolved background URL');
+    }
+
+    @IsTest
+    static void testBulkProcessing() {
+        Map<Id, Credit_Memo__c> memos = new Map<Id, Credit_Memo__c>([SELECT Id FROM Credit_Memo__c]);
+        List<Id> memoIds = new List<Id>(memos.keySet());
+
+        Test.startTest();
+        List<VoucherService.VoucherData> results = VoucherService.getVouchersDataForPdf(memoIds);
+        Test.stopTest();
+
+        Assert.areEqual(3, results.size(), 'Bulk method should successfully process all 3 credit memos');
+        
+        Integer memosWithImages = 0;
+        for (VoucherService.VoucherData data : results) {
+            if (data.imageUrl != null) {
+                memosWithImages++;
+            }
+        }
+        Assert.areEqual(2, memosWithImages, 'Only 2 out of 3 memos should have matching images');
     }
 }
