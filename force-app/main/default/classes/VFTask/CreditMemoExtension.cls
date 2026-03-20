@@ -1,4 +1,4 @@
-public class CreditMemoExtension {
+public with sharing class CreditMemoExtension {
     public Credit_Memo__c memo { get; set; }
     public String notesForLightning { get; set; }
     
